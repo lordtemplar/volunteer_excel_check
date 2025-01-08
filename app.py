@@ -11,7 +11,8 @@ def load_excel(file):
 def search_data(dataframes, query):
     result = {}
     for sheet_name, df in dataframes.items():
-        filtered_df = df[df.apply(lambda row: row.astype(str).str.contains(query, case=False).any(), axis=1)]
+        # ค้นหาในทุกคอลัมน์และแถว หากมีตรงกับ query จะเก็บไว้ใน filtered_df
+        filtered_df = df[df.apply(lambda row: row.astype(str).str.contains(query, case=False, na=False).any(), axis=1)]
         if not filtered_df.empty:
             result[sheet_name] = filtered_df
     return result
@@ -35,7 +36,7 @@ if uploaded_file:
         st.dataframe(df)
 
     # ฟังก์ชันค้นหา
-    query = st.text_input("Search for data (case insensitive):")
+    query = st.text_input("Search for data (case insensitive):", "")
     if query:
         search_results = search_data(dataframes, query)
         if search_results:
