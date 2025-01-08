@@ -4,7 +4,12 @@ import pandas as pd
 # ฟังก์ชันสำหรับโหลดข้อมูลจากไฟล์ Excel
 def load_excel(file):
     sheets = pd.ExcelFile(file).sheet_names  # ดึงรายชื่อชีททั้งหมด
-    dataframes = {sheet: pd.read_excel(file, sheet_name=sheet) for sheet in sheets}  # โหลดข้อมูลจากทุกชีท
+    dataframes = {}
+    for sheet in sheets:
+        df = pd.read_excel(file, sheet_name=sheet)
+        # ลบข้อมูลในแถวที่ 0-3
+        df = df.iloc[3:].reset_index(drop=True)
+        dataframes[sheet] = df
     return dataframes
 
 # ฟังก์ชันสำหรับค้นหาแบบอ่อนตัว
@@ -30,7 +35,7 @@ if uploaded_file:
     st.success("Excel file loaded successfully!")
 
     # แสดงข้อมูลในแต่ละชีท
-    st.subheader("Data Preview:")
+    st.subheader("Data Preview (Rows 0-3 removed):")
     for sheet_name, df in dataframes.items():
         st.write(f"**Sheet: {sheet_name}**")
         st.dataframe(df)
@@ -43,7 +48,7 @@ if uploaded_file:
             st.subheader("Search Results:")
             for sheet_name, result_df in search_results.items():
                 st.write(f"**Sheet: {sheet_name}**")
-                # เนื่องจากจะได้เฉพาะเซลล์ที่แมตช์ ต้องแสดงผลพร้อม index
-                st.dataframe(result_df.style.highlight_null(null_color='gray'))
+                # ใช้ st.write สำหรับแสดง DataFrame พร้อมไฮไลต์
+                st.write(result_df.style.highlight_null(null_color='gray'))
         else:
             st.warning("No results found for your query.")
