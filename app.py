@@ -18,7 +18,7 @@ def search_data(dataframes, query):
     for sheet_name, df in dataframes.items():
         # สร้าง DataFrame ใหม่ที่มีเฉพาะเซลล์ที่มีคำค้นหา
         filtered_df = df[df.applymap(lambda cell: query.lower() in str(cell).lower())]
-        if not filtered_df.isnull().all().all():  # ตรวจสอบว่า DataFrame มีข้อมูลตรงกับคำค้นหาหรือไม่
+        if not filtered_df.empty:  # ตรวจสอบว่า DataFrame มีข้อมูลตรงกับคำค้นหาหรือไม่
             result[sheet_name] = filtered_df
     return result
 
@@ -48,7 +48,7 @@ if uploaded_file:
             st.subheader("Search Results:")
             for sheet_name, result_df in search_results.items():
                 st.write(f"**Sheet: {sheet_name}**")
-                # ใช้ st.write สำหรับแสดง DataFrame พร้อมไฮไลต์
-                st.write(result_df.style.highlight_null(null_color='gray'))
+                # แสดงผล DataFrame โดยตรง
+                st.dataframe(result_df)
         else:
             st.warning("No results found for your query.")
