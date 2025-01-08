@@ -13,17 +13,17 @@ def load_excel(file):
     return dataframes
 
 # ฟังก์ชันสำหรับค้นหาแบบอ่อนตัว
-def search_data(dataframes, query):
+def search_data(dataframes, queries):
     result = {}
     for sheet_name, df in dataframes.items():
-        # ค้นหาแถวที่มีคำค้นหาในคอลัมน์ใดก็ได้
-        filtered_df = df[df.apply(lambda row: row.astype(str).str.contains(query, case=False, na=False).any(), axis=1)]
+        # ค้นหาแถวที่มีคำใดคำหนึ่งใน queries
+        filtered_df = df[df.apply(lambda row: row.astype(str).str.contains('|'.join(queries), case=False, na=False).any(), axis=1)]
         if not filtered_df.empty:  # ตรวจสอบว่า DataFrame มีข้อมูลตรงกับคำค้นหาหรือไม่
             result[sheet_name] = filtered_df
     return result
 
 # ส่วน UI ของ Streamlit
-st.title("Excel Viewer and Row-based Search Tool")
+st.title("Excel Viewer and Multi-Keyword Search Tool")
 st.subheader("Upload an Excel file to display all sheets and search for rows with matching data.")
 
 # อัพโหลดไฟล์ Excel
@@ -41,9 +41,15 @@ if uploaded_file:
         st.dataframe(df)
 
     # ฟังก์ชันค้นหา
-    query = st.text_input("Search for data (case insensitive):", "")
-    if query:
-        search_results = search_data(dataframes, query)
+    st.subheader("Search Data")
+    query_text = st.text_area("Enter keywords to search (one per line):")
+    if query_text:
+        # แปลงข้อความที่ผู้ใช้ป้อนให้เป็นรายการคำค้นหา
+        queries = [query.strip() for query in query_text.split('\n') if query.strip()]
+        st.write(f"**Searching for:** {queries}")
+
+        # ค้นหาในข้อมูล
+        search_results = search_data(dataframes, queries)
         if search_results:
             st.subheader("Search Results:")
             for sheet_name, result_df in search_results.items():
